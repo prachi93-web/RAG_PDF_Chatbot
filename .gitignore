@@ -1,0 +1,16 @@
+# Environment / secrets
+.env
+
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# ChromaDB
+chroma_db/
+
+# Uploaded PDFs
+*.pdf
+
+# IDE
+.vscode/
