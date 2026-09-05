@@ -1,49 +1,76 @@
-from pypdf import PdfReader
-from sentence_transformers import SentenceTransformer
-import chromadb
+from langchain_community.document_loaders import PyPDFLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_chroma import Chroma
+import tempfile
+import os
+import uuid
 
-
-model = SentenceTransformer("all-MiniLM-L6-v2")
-
-client = chromadb.PersistentClient(path="./chroma_db")
-collection = client.get_or_create_collection(
-    name="pdf_documents"
+embeddings = HuggingFaceEmbeddings(
+    model_name="sentence-transformers/all-MiniLM-L6-v2"
 )
 
+vectorstore = Chroma(
+    collection_name="pdf_documents",
+    embedding_function=embeddings,
+    persist_directory="./chroma_db"
+)
 
-def process_pdf(file):
+text_splitter = RecursiveCharacterTextSplitter(
+    chunk_size=800,
+    chunk_overlap=150,
+    separators=["\n\n", "\n", ". ", " ", ""]
+)
 
-    pdf = PdfReader(file.file)
-    text = ""
+def process_pdf(file,chat_id):
 
-    for page in pdf.pages:
-        page_text = page.extract_text()
-        if page_text:
-            text += page_text
+    document_id = str(uuid.uuid4())
 
-    chunk_size = 500
-    chunks = []
+    # saving pdf temporarily
+    with tempfile.NamedTemporaryFile(
+        delete=False,
+        suffix=".pdf"
+    ) as temp_file:
 
-    for i in range(0, len(text), chunk_size):
-        chunk = text[i:i + chunk_size]
-        chunks.append(chunk)
+        temp_file.write(file.file.read())
+        temp_path = temp_file.name
 
-    embeddings = model.encode(chunks)
+    try:
 
-    ids = []
+        loader = PyPDFLoader(temp_path)
+        pages = loader.load()
 
-    for i in range(len(chunks)):
-        ids.append(f"{file.filename}_chunk_{i}")
+        for page in pages:
+            page.metadata["filename"] = file.filename
+            page.metadata["document_id"] = document_id
+            page.metadata["chat_id"] = chat_id
 
-    collection.add(
-        ids=ids,
-        documents=chunks,
-        embeddings=embeddings.tolist()
-    )
+        chunks = text_splitter.split_documents(pages)
 
-    return {
-        "filename": file.filename,
-        "number_of_chunks": len(chunks),
-        "embedding_size": len(embeddings[0]),
-        "message": "PDF stored in vector database!"
-    }
+        for index, chunk in enumerate(chunks):
+
+            chunk.metadata["chunk_id"] = index
+            chunk.metadata["source"] = file.filename
+            chunk.metadata["document_id"] = document_id
+            chunk.metadata["chat_id"] = chat_id
+
+        vectorstore.add_documents(
+            documents=chunks
+        )
+
+        return {
+            "filename": file.filename,
+            "document_id": document_id,
+            "chat_id": chat_id,
+            "number_of_pages": len(pages),
+            "number_of_chunks": len(chunks),
+            "embedding_model": "all-MiniLM-L6-v2",
+            "chunk_size": 800,
+            "chunk_overlap": 150,
+            "message": "PDF processed and stored in vector database!"
+        }
+
+    finally:
+
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
