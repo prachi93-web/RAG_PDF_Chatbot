@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-
+const API_URL = import.meta.env.VITE_API_URL;
 function UploadPdf({ chatId }) {
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
@@ -30,7 +30,7 @@ function UploadPdf({ chatId }) {
     formData.append("chat_id", chatId);
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/upload-pdf", {
+      const response = await fetch(`${API_URL}/upload-pdf`, {
         method: "POST",
         body: formData,
       });

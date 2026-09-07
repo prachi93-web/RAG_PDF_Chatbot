@@ -3,6 +3,7 @@ import ReactMarkdown from "react-markdown";
 import UploadPdf from "../components/UploadPdf";
 import Header from "../components/Header";
 
+const API_URL = import.meta.env.VITE_API_URL;
 function Chat() {
   const [chatId] = useState(() => crypto.randomUUID());
   const [question, setQuestion] = useState("");
@@ -24,7 +25,7 @@ function Chat() {
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/ask?question=${encodeURIComponent(
+        `${API_URL}/ask?question=${encodeURIComponent(
           currentQuestion,
         )}&chat_id=${encodeURIComponent(chatId)}`,
         {
