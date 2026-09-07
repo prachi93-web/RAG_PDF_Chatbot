@@ -13,7 +13,7 @@ embeddings = HuggingFaceEmbeddings(
 vectorstore = Chroma(
     collection_name="pdf_documents",
     embedding_function=embeddings,
-    persist_directory="./chroma_db"
+    persist_directory=os.getenv("CHROMA_PERSIST_DIRECTORY", "./chroma_db")
 )
 
 llm = ChatGoogleGenerativeAI(
