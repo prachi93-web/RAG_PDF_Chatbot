@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import UploadPdf from "../components/UploadPdf";
+import Header from "../components/Header";
 
 function Chat() {
   const [chatId] = useState(() => crypto.randomUUID());
@@ -58,15 +59,17 @@ function Chat() {
   };
 
   return (
-    <div className="h-full overflow-hidden bg-gradient-to-br from-slate-50 via-teal-50 to-slate-100">
-      <div className="w-full h-full px-4 py-6 flex flex-col">
-        <div className="mb-4 mt-5 shrink-0">
+  <div className="min-h-screen bg-slate-50">
+    <Header />
+    <main className="pt-16 min-h-screen">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-teal-50 to-slate-100">
+      <div className="w-full px-8 py-4 flex flex-col">
+        <div className="mb-4 mt-1 shrink-0">
           <h2 className="text-2xl font-bold text-slate-800">Chat with your PDF</h2>
           <p className="text-slate-500 mt-1 text-sm">Upload your documents and ask questions about their content.</p>
         </div>
 
         <div className="shrink-0"><UploadPdf chatId={chatId} /></div>
-
           <div className="min-h-[400px] bg-white/90 backdrop-blur-sm border border-teal-100 rounded-xl shadow-lg overflow-hidden flex flex-col">          <div className="shrink-0 px-5 py-3 bg-gradient-to-r from-teal-700 to-teal-600 text-white">
             <h3 className="font-semibold">💬 Conversation</h3>
             <p className="text-xs text-teal-100 mt-0.5">Ask questions based on your uploaded documents.</p>
@@ -139,6 +142,8 @@ function Chat() {
         </div>
       </div>
     </div>
-  );
+    </main>
+  </div>
+);
 }
 export default Chat;

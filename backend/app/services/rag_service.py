@@ -32,6 +32,13 @@ def ask_rag(question,chat_id):
         }
     )
     documents = retriever.invoke(question)
+    if not documents:
+        return {
+            "question": question,
+            "answer": "I could not find the answer in the PDF.",
+            "source": None,
+            "relevant_chunks": []
+        }
 
     context = "\n\n".join(
         document.page_content
