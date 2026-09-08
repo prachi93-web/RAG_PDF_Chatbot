@@ -36,7 +36,7 @@ Relevant Document Chunks
 Google Gemini
       ↓
 Grounded Answer + Source
-
+```
 ## Key Highlights
 
 - Built a complete end-to-end RAG pipeline using LangChain
@@ -52,3 +52,4 @@ Grounded Answer + Source
 **Prachi Mehetre**
 
 GitHub: https://github.com/prachi93-web
+
